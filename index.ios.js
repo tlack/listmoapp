@@ -4,6 +4,7 @@ var React = require('react-native');
 
 var MainView = require('./views/main')
 var ProfileView = require('./views/profile');
+var MapView = require('./views/map');
 
 var {
   AppRegistry,
@@ -37,8 +38,11 @@ var listmo = React.createClass({
 			case "profile":
 				next = <ProfileView.view nav={nav}/>
 			break;
+			case "map":
+				next = <MapView.view nav={nav}/>
+			break;
 			default: 
-				next = <MainView.view nav={nav}/>
+				next = <MapView.view nav={nav}/>
 			break;
 		}
 		return next;

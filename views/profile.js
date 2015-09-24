@@ -19,6 +19,15 @@ var ProfileView = React.createClass({
 			}
 		};
 	},
+	onDuty: function(){
+		this.props.nav.push({
+			title: 'Map',
+			id: 'map'
+		})
+	},
+	history: function(){
+
+	},
 	render: function() {
 		return (
 	        <View style={styles.container}>
@@ -38,10 +47,10 @@ var ProfileView = React.createClass({
 var ReadyButton = React.createClass({
 	render: function(){
 		return (
-			<View style={this.props.styles.button}>
+			<View style={[this.props.styles.button, {height:60}]}>
 				<TouchableHighlight
 					style={this.props.styles.blueButton} underlayColor='#194c5b'
-					onPress={this.props.controller.login}>
+					onPress={this.props.controller.onDuty}>
 					<Text style={this.props.styles.buttonText}>ON DUTY</Text>
 				</TouchableHighlight>
 			</View>
@@ -52,9 +61,10 @@ var ReadyButton = React.createClass({
 var HistoryButton = React.createClass({
 	render: function(){
 		return (
-			<View style={this.props.styles.button}>
+			<View style={[this.props.styles.button, {height:60}]}>
 				<TouchableHighlight
-					style={this.props.styles.greenButton} underlayColor='#194c5b'>
+					style={this.props.styles.greenButton} underlayColor='#194c5b'
+					onPress={this.props.controller.history}>
 					<Text style={this.props.styles.buttonText}>HISTORY</Text>
 				</TouchableHighlight>
 			</View>
