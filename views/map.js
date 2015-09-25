@@ -12,26 +12,92 @@ var {
   View,
 } = React;
 
+var { Icon, } = require('react-native-icons');
+
 var MapViewExample = React.createClass({
+
+	componentDidMount(){
+
+		var workorders = [
+			{
+				id: 0,
+				pickup: {
+					latitude:37.7846634,
+					longitude:-122.4064989,
+				},
+				dropoff: {
+					latitude:37.7882726,
+					longitude:-122.4057655,
+				},
+				offered_pay: "24.00",
+				deadline: "1443188069",
+				items: "6 pack of budweiser, 1 bottle of champagne"
+			},
+			{
+				id: 1,
+				pickup: {
+					latitude:37.7921456,
+					longitude:-122.4191997,
+				},
+				dropoff: {
+					latitude:37.7908308,
+					longitude:-122.4370415,
+				},
+				offered_pay: "30.00",
+				deadline: "1443188069",
+				items:"6 sacks of flour, our bags of filo"
+			}
+		];
+
+		for(var i=0;i<workorders.length;i++)
+		{
+			workorders[i].annotations = [
+				{
+					region: {
+						latitudeDelta: 10,
+						longitudeDelta: 10,
+					},
+					latitude: workorders[i].pickup ? workorders[i].pickup.latitude : workorders[i].dropoff.latitude,
+					longitude: workorders[i].pickup ? workorders[i].pickup.longitude : workorders[i].dropoff.longitude,
+					title: workorders[i].pickup ? 'PICKUP' : 'SERVICE LOCATION',
+					subtitle: workorders[i].items,
+					hasRightCallout: true,
+					onRightCalloutPress: function(e){
+						_this.popOrderConfirm(e.annotationId);
+					},
+					id: workorders[i]
+				}
+			];
+
+			if(workorders[i].pickup)
+			{
+				workorders[i].annotations.push(
+					{
+						latitude: workorders[i].dropoff.latitude,
+						longitude: workorders[i].dropoff.longitude,
+						title: 'DELIVER',
+						subtitle: workorders[i].items,
+						hasRightCallout: true,
+						onRightCalloutPress: function(e){
+							_this.popOrderConfirm(e.annotationId);
+						},
+						id: workorders[i]
+					}
+				);
+			}
+		}
+
+		this.setState({workorders:workorders});
+	},
 
 	getInitialState() {
 		var _this = this;
 		return {
 			mapRegion: null,
 			mapRegionInput: null,
-			annotations: [{
-				latitude:37.7846634,
-				longitude:-122.4064989,
-				title: 'six pack beer',
-				subtitle: 'mike wants beer',
-				hasRightCallout: true,
-				onRightCalloutPress: function(e){
-					_this.popOrderConfirm(e.annotationId);
-				},
-				id: '0'
-			}],
 			showModal: false,
-			selectedOrder: null
+			selectedOrder: null,
+			workorders: null,
 		};
 	},
 
@@ -53,6 +119,12 @@ var MapViewExample = React.createClass({
 				<Text style={styles.label}>
 					WORK ORDERS
 				</Text>
+
+				<View style={{flexDirection:'row', paddingBottom: 10,}}>
+					<TouchableHighlight><Icon name='fontawesome|angle-double-left' size={20} color='white' style={{width: 30, height: 30}}/></TouchableHighlight>
+					<Text style={{flex:1}}></Text>
+					<TouchableHighlight><Icon name='fontawesome|angle-double-right' size={20} color='white' style={{width: 30, height: 30}}/></TouchableHighlight>
+				</View>
 				
 				<Modal
 		          animated={true}
