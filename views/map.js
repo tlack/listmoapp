@@ -115,15 +115,15 @@ var MapViewExample = React.createClass({
 
 	render() {
 		return (
-			<View style={styles.container}>
-				<Text style={styles.label}>
-					WORK ORDERS
-				</Text>
+			<View style={[styles.container, {alignItems:'stretch'}]}>
+				
 
-				<View style={{flexDirection:'row', paddingBottom: 10,}}>
-					<TouchableHighlight><Icon name='fontawesome|angle-double-left' size={20} color='white' style={{width: 30, height: 30}}/></TouchableHighlight>
-					<Text style={{flex:1}}></Text>
-					<TouchableHighlight><Icon name='fontawesome|angle-double-right' size={20} color='white' style={{width: 30, height: 30}}/></TouchableHighlight>
+				<View style={{flexDirection:'row', paddingBottom: 10}}>
+					<TouchableHighlight><Icon name='fontawesome|angle-double-left' size={20} color='white' style={{width: 30, height: 30, marginTop:20}}/></TouchableHighlight>
+					<Text style={[{flex:1},styles.label]}>
+						WORK ORDERS
+					</Text>
+					<TouchableHighlight><Icon name='fontawesome|angle-double-right' size={20} color='white' style={{width: 30, height: 30, marginTop:20}}/></TouchableHighlight>
 				</View>
 				
 				<Modal
