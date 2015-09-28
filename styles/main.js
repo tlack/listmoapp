@@ -35,7 +35,6 @@ var styles = StyleSheet.create({
   	marginRight: 30,
   	marginTop:30,
   	borderWidth: 1,
-  	borderColor: '#f0e8d7'
   },
   button: {
   	justifyContent: 'center',

@@ -79,6 +79,7 @@ var MapViewExample = React.createClass({
 							onRightCalloutPress: function(e){
 								_this.popOrderConfirm(e.annotationId);
 							},
+							pinColor: 'purple',
 							id: workorders[i].id
 						}
 					];
@@ -112,7 +113,7 @@ var MapViewExample = React.createClass({
 				}
 
 				setTimeout(function(){
-					_this.setState({workorders:workorders, currentWorkorder:workorders[0]});
+					_this.setState({workorders:workorders, currentWorkorder:workorders[0], refreshAnnotations: true});
 				}, 0);
 				
 			}
@@ -123,9 +124,8 @@ var MapViewExample = React.createClass({
 	getInitialState() {
 		var _this = this;
 		return {
-			mapRegion: null,
-			mapRegionInput: null,
 			showModal: false,
+			refreshAnnotations: null,
 			selectedOrder: null,
 			workorders: null,
 			currentWorkorder: null,
@@ -145,9 +145,9 @@ var MapViewExample = React.createClass({
 		var index = this.state.workorders.indexOf(this.state.currentWorkorder);
 		if(index > 0)
 		{
-			this.setState({currentWorkorder: this.state.workorders[index-1]});
+			this.setState({currentWorkorder: this.state.workorders[index-1], refreshAnnotations: true});
 		} else {
-			this.setState({currentWorkorder: this.state.workorders[this.state.workorders.length-1]});
+			this.setState({currentWorkorder: this.state.workorders[this.state.workorders.length-1], refreshAnnotations: true});
 		}
 	},
 
@@ -155,9 +155,9 @@ var MapViewExample = React.createClass({
 		var index = this.state.workorders.indexOf(this.state.currentWorkorder);
 		if(index < this.state.workorders.length -1)
 		{
-			this.setState({currentWorkorder: this.state.workorders[index+1]});
+			this.setState({currentWorkorder: this.state.workorders[index+1], refreshAnnotations: !this.state.refreshAnnotations});
 		} else {
-			this.setState({currentWorkorder: this.state.workorders[0]});
+			this.setState({currentWorkorder: this.state.workorders[0], refreshAnnotations: !this.state.refreshAnnotations});
 		}
 	},
 
@@ -186,9 +186,11 @@ var MapViewExample = React.createClass({
 					: null}
 				</View>
 
-				<Text style={{alignSelf:'center', paddingBottom: 10, fontSize: 10, color:'#fff'}}>
-					Order: {this.state.workorders ? this.state.workorders.indexOf(this.state.currentWorkorder) + 1 : 0} of {this.state.workorders ? this.state.workorders.length : 0}
-				</Text>
+				{!this.state.acceptedOrder ?
+					<Text style={{alignSelf:'center', paddingBottom: 10, fontSize: 10, color:'#fff'}}>
+						Order: {this.state.workorders ? this.state.workorders.indexOf(this.state.currentWorkorder) + 1 : 0} of {this.state.workorders ? this.state.workorders.length : 0}
+					</Text>
+				: null}
 
 				<Text style={{alignSelf:'center', paddingBottom: 10, fontSize: 20, color:'#fff'}}>
 					Offer pay: ${this.state.currentWorkorder ? this.state.currentWorkorder.offered_pay : 0}
@@ -210,8 +212,8 @@ var MapViewExample = React.createClass({
 				<MapView
 					style={styles.map}
 					showsUserLocation={true}
-					region={this.state.currentWorkorder ? this.state.currentWorkorder.region : null}
-					annotations={this.state.currentWorkorder ? this.state.currentWorkorder.annotations : null}/>
+					refreshAnnotations={this.state.refreshAnnotations || undefined}
+					annotations={this.state.currentWorkorder ? this.state.currentWorkorder.annotations : null} showAnnotations={true}/>
 
 				<AcceptedOrder controller={this} />
 			</View>

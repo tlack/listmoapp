@@ -12,10 +12,13 @@ var {
 var styles = require('../styles/main.js').styles;
 var Display = require('react-native-device-display');
 
+var phonereg = /^\d{10}$/;
+
 var MainView = React.createClass({
 	getInitialState: function(){
 		return {
 			showButtons:false,
+			inputError: false,
 			viewStyle: {
 				height: 0
 			},
@@ -25,7 +28,7 @@ var MainView = React.createClass({
 		};
 	},
 	animateButtons: function(show){
-		LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
+		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 		this.setState({
 			viewStyle: {
 				height: show === true ? 60 : 0
@@ -36,14 +39,15 @@ var MainView = React.createClass({
 		});
 	},
 	onInput: function(value){
-		if(value == "")
+		if(!value.match(phonereg))
 		{
 			this.setState({
 				showButtons: false,
+				inputError: true
 			});
 			this.animateButtons(false);
 		} else {
-			this.setState({showButtons: true});
+			this.setState({showButtons: true, inputError: false});
 			this.animateButtons(true);
 		}
 		
@@ -95,7 +99,7 @@ var MainView = React.createClass({
 	            	ref='phone'
 	            	placeholder="Enter your phone #"
 	            	keyboardType="phone-pad"
-	            	style={styles.input}
+	            	style={[styles.input, {borderColor:this.state.inputError ? '#bc3e3e' : '#f0e8d7'}]}
 	            	placeholderTextColor='#b2ac9f'
 	            	onChangeText={this.onInput}
 	            	onFocus={this.onFocus}
