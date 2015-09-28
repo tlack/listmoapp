@@ -152,9 +152,6 @@
 		D85E5CB51BB1ACED00C74D98 /* FontAwesomeKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FontAwesomeKit.h; path = "../node_modules/react-native-icons/ios/ReactNativeIcons/Libraries/FontAwesomeKit/FontAwesomeKit.h"; sourceTree = "<group>"; };
 		D85E5CBA1BB1EAB800C74D98 /* DisplayDeviceUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DisplayDeviceUtil.h; path = "../node_modules/react-native-device-display/DisplayDeviceUtil.h"; sourceTree = "<group>"; };
 		D85E5CBB1BB1EAB800C74D98 /* DisplayDeviceUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DisplayDeviceUtil.m; path = "../node_modules/react-native-device-display/DisplayDeviceUtil.m"; sourceTree = "<group>"; };
-		D85E5CD71BB42E1400C74D98 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
-		D85E5CD91BB42E1B00C74D98 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
-		D85E5CDB1BB42E2400C74D98 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -320,9 +317,6 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				D85E5CDB1BB42E2400C74D98 /* libz.tbd */,
-				D85E5CD91BB42E1B00C74D98 /* libc++.tbd */,
-				D85E5CD71BB42E1400C74D98 /* libsqlite3.tbd */,
 				D85E5CBA1BB1EAB800C74D98 /* DisplayDeviceUtil.h */,
 				D85E5CBB1BB1EAB800C74D98 /* DisplayDeviceUtil.m */,
 				D85E5CB21BB1ACED00C74D98 /* FAKFontAwesome.h */,

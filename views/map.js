@@ -10,6 +10,7 @@ var {
   Modal,
   TouchableHighlight,
   View,
+  LayoutAnimation
 } = React;
 
 var { Icon, } = require('react-native-icons');
@@ -64,11 +65,15 @@ var MapViewExample = React.createClass({
 
 				for(var i=0;i<workorders.length;i++)
 				{
+					var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+					d.setUTCSeconds(parseInt(workorders[i].deadline));
+					workorders[i].deadline = d;
+
 					workorders[i].annotations = [
 						{
 							latitude: workorders[i].pickup ? workorders[i].pickup.latitude : workorders[i].dropoff.latitude,
 							longitude: workorders[i].pickup ? workorders[i].pickup.longitude : workorders[i].dropoff.longitude,
-							title: workorders[i].pickup ? 'PICKUP' : 'SERVICE LOCATION',
+							title: (workorders[i].pickup ? 'PICKUP' : 'SERVICE LOCATION') + ' deadline: ' + d,
 							subtitle: workorders[i].items,
 							hasRightCallout: true,
 							onRightCalloutPress: function(e){
@@ -123,7 +128,8 @@ var MapViewExample = React.createClass({
 			showModal: false,
 			selectedOrder: null,
 			workorders: null,
-			currentWorkorder: null
+			currentWorkorder: null,
+			acceptedHeight: 0
 		};
 	},
 
@@ -137,7 +143,6 @@ var MapViewExample = React.createClass({
 
 	_prevOrder() {
 		var index = this.state.workorders.indexOf(this.state.currentWorkorder);
-
 		if(index > 0)
 		{
 			this.setState({currentWorkorder: this.state.workorders[index-1]});
@@ -147,9 +152,7 @@ var MapViewExample = React.createClass({
 	},
 
 	_nextOrder(){
-
 		var index = this.state.workorders.indexOf(this.state.currentWorkorder);
-
 		if(index < this.state.workorders.length -1)
 		{
 			this.setState({currentWorkorder: this.state.workorders[index+1]});
@@ -159,7 +162,8 @@ var MapViewExample = React.createClass({
 	},
 
 	acceptOrder(id) {
-		console.log(id);
+		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+		this.setState({showModal: false, acceptedOrder:this.state.currentWorkorder, acceptedHeight: 200});
 	},
 
 	render() {
@@ -167,15 +171,19 @@ var MapViewExample = React.createClass({
 			<View style={[styles.container, {alignItems:'stretch'}]}>
 
 				<View style={{flexDirection:'row'}}>
-					<TouchableHighlight onPress={this._prevOrder}>
-						<Icon name='fontawesome|angle-double-left' size={20} color='white' style={{width: 30, height: 30, marginTop:20}}/>
-					</TouchableHighlight>
+					{!this.state.acceptedOrder ?
+						<TouchableHighlight onPress={this._prevOrder}>
+							<Icon name='fontawesome|angle-double-left' size={20} color='white' style={{width: 30, height: 30, marginTop:20}}/>
+						</TouchableHighlight>
+					: null}
 					<Text style={[{flex:1},styles.label]}>
-						WORK ORDERS
+						{this.state.acceptedOrder ? 'CURRENT ORDER' : 'WORK ORDERS'}
 					</Text>
-					<TouchableHighlight onPress={this._nextOrder}>
-						<Icon name='fontawesome|angle-double-right' size={20} color='white' style={{width: 30, height: 30, marginTop:20}}/>
-					</TouchableHighlight>
+					{!this.state.acceptedOrder ?
+						<TouchableHighlight onPress={this._nextOrder}>
+							<Icon name='fontawesome|angle-double-right' size={20} color='white' style={{width: 30, height: 30, marginTop:20}}/>
+						</TouchableHighlight>
+					: null}
 				</View>
 
 				<Text style={{alignSelf:'center', paddingBottom: 10, fontSize: 10, color:'#fff'}}>
@@ -192,9 +200,9 @@ var MapViewExample = React.createClass({
 		          visible={this.state.showModal}>
 		          <View style={styles.modal}>
 		            <View style={styles.modalInner}>
-		              <Text>All the information about the pickup.{'\n'}$$$ million moneys</Text>
-		              <ReadyButton styles={styles} controller={this} orderId={this.state.selectedOrder}/>
-		              <CloseButton styles={styles} controller={this}/>
+		              <Text>{this.state.currentWorkorder ? this.state.currentWorkorder.items : ''}.{'\n'} ${this.state.currentWorkorder? this.state.currentWorkorder.offered_pay : ''}</Text>
+		              {!this.state.acceptedOrder ? <ReadyButton styles={styles} controller={this} orderId={this.state.currentWorkorder ? this.state.currentWorkorder.id : ''} onpress={this.acceptOrder} text={'ACCEPT'}/> : null }
+		              <CloseButton styles={styles} controller={this} text={!this.state.acceptedOrder ? 'DECLINE' : 'CLOSE'}/>
 		            </View>
 		          </View>
 		        </Modal>
@@ -204,11 +212,24 @@ var MapViewExample = React.createClass({
 					showsUserLocation={true}
 					region={this.state.currentWorkorder ? this.state.currentWorkorder.region : null}
 					annotations={this.state.currentWorkorder ? this.state.currentWorkorder.annotations : null}/>
+
+				<AcceptedOrder controller={this} />
 			</View>
 		);
 	},
 
 });
+
+var AcceptedOrder = React.createClass({
+	render: function(){
+		return (
+			<View style={{height: this.props.controller.state.acceptedHeight}}>
+				<ReadyButton text={'DONE'} styles={styles} controller={this}/>
+				<CloseButton text={'REPORT ISSUE'} styles={styles} controller={this.props.controller}/>
+			</View>
+		)
+	}
+})
 
 var ReadyButton = React.createClass({
 	render: function(){
@@ -216,8 +237,8 @@ var ReadyButton = React.createClass({
 			<View style={[this.props.styles.button, {height:60}]}>
 				<TouchableHighlight
 					style={this.props.styles.blueButton} underlayColor='#194c5b'
-					onPress={this.props.controller.acceptOrder.bind(this.props.controller, this.props.orderId)}>
-					<Text style={this.props.styles.buttonText}>ACCEPT</Text>
+					onPress={this.props.onpress}>
+					<Text style={this.props.styles.buttonText}>{this.props.text}</Text>
 				</TouchableHighlight>
 			</View>
 		)
@@ -231,7 +252,7 @@ var CloseButton = React.createClass({
 				<TouchableHighlight
 					style={this.props.styles.redButton} underlayColor='#194c5b'
 					onPress={this.props.controller._setModalVisible.bind(this.props.controller, false)}>
-					<Text style={this.props.styles.buttonText}>DECLINE</Text>
+					<Text style={this.props.styles.buttonText}>{this.props.text}</Text>
 				</TouchableHighlight>
 			</View>
 		)
