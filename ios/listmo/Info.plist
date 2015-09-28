@@ -28,7 +28,7 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>In order to display incoming orders in the vecinity of the user</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Khand-medium.ttf</string>

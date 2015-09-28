@@ -10,7 +10,8 @@ var {
   Modal,
   TouchableHighlight,
   View,
-  LayoutAnimation
+  LayoutAnimation,
+  NativeAppEventEmitter
 } = React;
 
 var { Icon, } = require('react-native-icons');
@@ -22,103 +23,66 @@ var MapViewExample = React.createClass({
   	},
 
 	componentDidMount(){
-		var workorders = [
-			{
-				id: '0',
-				pickup: {
-					latitude:37.7846634,
-					longitude:-122.4064989,
-				},
-				dropoff: {
-					latitude:37.7882726,
-					longitude:-122.4057655,
-				},
-				offered_pay: "24.00",
-				deadline: "1443188069",
-				items: "6 pack of budweiser, 1 bottle of champagne"
-			},
-			{
-				id: '1',
-				pickup: {
-					latitude:37.7921456,
-					longitude:-122.4191997,
-				},
-				dropoff: {
-					latitude:37.7908308,
-					longitude:-122.4370415,
-				},
-				offered_pay: "30.00",
-				deadline: "1443188069",
-				items:"6 sacks of flour, our bags of filo"
-			}
-		];
 
-		
 		var _this = this;
 
-		navigator.geolocation.getCurrentPosition(function(initialPosition)
-			{
-				//this is fake data for now
-				initialPosition.latitude = 37.7859513;
-				initialPosition.longitude = -122.4064083;
-				_this.setState({initialPosition: initialPosition});
+		var first = true;
 
-				for(var i=0;i<workorders.length;i++)
-				{
-					var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-					d.setUTCSeconds(parseInt(workorders[i].deadline));
-					workorders[i].deadline = d;
+		var subscription = NativeAppEventEmitter.addListener(
+		  'MapCompleted',
+		  function(e){
+		  	if(first === true)
+		  	{
+		  		fetch('http://listmo.com/api/workorders/')
+				.then(function(resp){
+					return resp.json()
+				})
+				.then(function(json) {
+					var workorders = json.open;
 
-					workorders[i].annotations = [
-						{
-							latitude: workorders[i].pickup ? workorders[i].pickup.latitude : workorders[i].dropoff.latitude,
-							longitude: workorders[i].pickup ? workorders[i].pickup.longitude : workorders[i].dropoff.longitude,
-							title: (workorders[i].pickup ? 'PICKUP' : 'SERVICE LOCATION') + ' deadline: ' + d,
-							subtitle: workorders[i].items,
-							hasRightCallout: true,
-							onRightCalloutPress: function(e){
-								_this.popOrderConfirm(e.annotationId);
-							},
-							pinColor: 'purple',
-							id: workorders[i].id
-						}
-					];
-
-					if(workorders[i].pickup)
+					for(var i=0;i<workorders.length;i++)
 					{
-						workorders[i].annotations.push(
+						workorders[i].annotations = [
 							{
-								latitude: workorders[i].dropoff.latitude,
-								longitude: workorders[i].dropoff.longitude,
-								title: 'DELIVER',
+								latitude: workorders[i].type == "Delivery" ? workorders[i].from.lat : workorders[i].to.lat,
+								longitude: workorders[i].type == "Delivery" ? workorders[i].from.long : workorders[i].to.long,
+								title: (workorders[i].type == "Delivery" ? 'PICKUP' : 'SERVICE LOCATION') + ' deadline: ' + workorders[i].deadline,
 								subtitle: workorders[i].items,
 								hasRightCallout: true,
 								onRightCalloutPress: function(e){
 									_this.popOrderConfirm(e.annotationId);
 								},
-								id: workorders[i].id
+								pinColor: 'purple',
+								id: workorders[i].workorder
 							}
-						);
+						];
+
+						if(workorders[i].type == "Delivery")
+						{
+							workorders[i].annotations.push(
+								{
+									latitude: workorders[i].to.lat,
+									longitude: workorders[i].to.long,
+									title: 'DELIVER',
+									subtitle: workorders[i].items,
+									hasRightCallout: true,
+									onRightCalloutPress: function(e){
+										_this.popOrderConfirm(e.annotationId);
+									},
+									id: workorders[i].workorder
+								}
+							);
+						}
 					}
 
-					var latDelta = Math.abs((workorders[i].pickup ? workorders[i].pickup.latitude : workorders[i].dropoff.latitude) - (workorders[i].pickup ? workorders[i].dropoff.latitude : initialPosition.latitude)) * 3;
-					var longDelta = Math.abs((workorders[i].pickup ? workorders[i].dropoff.longitude : initialPosition.longitude) - (workorders[i].pickup ? workorders[i].pickup.longitude : workorders[i].dropoff.longitude)) * 3;
-
-					workorders[i].region = {
-						latitude: workorders[i].pickup ? workorders[i].pickup.latitude : workorders[i].dropoff.latitude,
-						longitude: workorders[i].pickup ? workorders[i].pickup.longitude : workorders[i].dropoff.longitude,
-						latitudeDelta: latDelta,
-						longitudeDelta: longDelta
-					}
-				}
-
-				setTimeout(function(){
 					_this.setState({workorders:workorders, currentWorkorder:workorders[0], refreshAnnotations: true});
-				}, 0);
-				
-			}
-	    ,function(err){console.log(err)},{enableHighAccuracy: true, timeout: 20000, maximumAge: 1000});
-
+				})
+				.catch(function(error) {
+					console.log(error);
+				});
+		  	}
+		  }
+		);
 	},
 
 	getInitialState() {
@@ -171,7 +135,7 @@ var MapViewExample = React.createClass({
 			<View style={[styles.container, {alignItems:'stretch'}]}>
 
 				<View style={{flexDirection:'row'}}>
-					{!this.state.acceptedOrder ?
+					{!this.state.acceptedOrder && (this.state.workorders ? this.state.workorders.length > 1 : null) ?
 						<TouchableHighlight onPress={this._prevOrder}>
 							<Icon name='fontawesome|angle-double-left' size={20} color='white' style={{width: 30, height: 30, marginTop:20}}/>
 						</TouchableHighlight>
@@ -179,7 +143,7 @@ var MapViewExample = React.createClass({
 					<Text style={[{flex:1},styles.label]}>
 						{this.state.acceptedOrder ? 'CURRENT ORDER' : 'WORK ORDERS'}
 					</Text>
-					{!this.state.acceptedOrder ?
+					{!this.state.acceptedOrder && (this.state.workorders ? this.state.workorders.length > 1 : null) ?
 						<TouchableHighlight onPress={this._nextOrder}>
 							<Icon name='fontawesome|angle-double-right' size={20} color='white' style={{width: 30, height: 30, marginTop:20}}/>
 						</TouchableHighlight>
@@ -193,7 +157,7 @@ var MapViewExample = React.createClass({
 				: null}
 
 				<Text style={{alignSelf:'center', paddingBottom: 10, fontSize: 20, color:'#fff'}}>
-					Offer pay: ${this.state.currentWorkorder ? this.state.currentWorkorder.offered_pay : 0}
+					Offer pay: ${this.state.currentWorkorder ? this.state.currentWorkorder.pay : 0}
 				</Text>
 				
 				<Modal
@@ -202,7 +166,7 @@ var MapViewExample = React.createClass({
 		          visible={this.state.showModal}>
 		          <View style={styles.modal}>
 		            <View style={styles.modalInner}>
-		              <Text>{this.state.currentWorkorder ? this.state.currentWorkorder.items : ''}.{'\n'} ${this.state.currentWorkorder? this.state.currentWorkorder.offered_pay : ''}</Text>
+		              <Text>{this.state.currentWorkorder ? this.state.currentWorkorder.items : ''}.{'\n'} ${this.state.currentWorkorder? this.state.currentWorkorder.pay : ''}</Text>
 		              {!this.state.acceptedOrder ? <ReadyButton styles={styles} controller={this} orderId={this.state.currentWorkorder ? this.state.currentWorkorder.id : ''} onpress={this.acceptOrder} text={'ACCEPT'}/> : null }
 		              <CloseButton styles={styles} controller={this} text={!this.state.acceptedOrder ? 'DECLINE' : 'CLOSE'}/>
 		            </View>

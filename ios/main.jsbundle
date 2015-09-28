@@ -1358,7 +1358,7 @@ throw new TypeError(
 
 var index=findIndex.call(this,predicate,context);
 return index === -1?undefined:this[index];}});}})();
-__d('listmo/index.ios.js',["react-native/Libraries/react-native/react-native.js","Dimensions","listmo/views/main.js","listmo/views/profile.js","listmo/views/map.js"],function(global, require, module, exports) {  'use strict';
+__d('listmo/index.ios.js',["react-native/Libraries/react-native/react-native.js","listmo/views/profile.js","Dimensions","listmo/views/main.js","listmo/views/map.js"],function(global, require, module, exports) {  'use strict';
 
 var React=require('react-native/Libraries/react-native/react-native.js');
 
@@ -5138,7 +5138,7 @@ NodeHandle.injection.injectImplementation(UniversalWorkerNodeHandle);}
 module.exports = {
 inject:inject};
 });
-__d('InitializeJavaScriptAppEngine',["RCTDebugComponentOwnership","RCTDeviceEventEmitter","PerformanceLogger","ExceptionsManager","ErrorUtils","ExceptionsManager","Platform","checkFlowAtRuntime","JSTimers","NativeModules","Promise","XMLHttpRequest","FormData","fetch","Geolocation","WebSocket","BridgeProfiling","regenerator/runtime.js"],function(global, require, module, exports) {  require(
+__d('InitializeJavaScriptAppEngine',["RCTDebugComponentOwnership","RCTDeviceEventEmitter","PerformanceLogger","regenerator/runtime.js","ExceptionsManager","ErrorUtils","ExceptionsManager","Platform","checkFlowAtRuntime","JSTimers","NativeModules","Promise","XMLHttpRequest","FormData","fetch","Geolocation","WebSocket","BridgeProfiling"],function(global, require, module, exports) {  require(
 
 
 
@@ -26863,6 +26863,9 @@ mapType:React.PropTypes.oneOf([
 
 
 
+refreshAnnotations:React.PropTypes.bool,
+
+
 
 
 
@@ -28553,7 +28556,7 @@ this.emit(arg.eventType,arg.data,arg.didEmitCallback);}}}]);return NavigationEve
 
 module.exports = NavigationEventEmitter;
 });
-__d('NavigatorBreadcrumbNavigationBar',["NavigatorBreadcrumbNavigationBarStyles","NavigatorNavigationBarStyles","React","StaticContainer.react","StyleSheet","View","invariant","immutable/dist/immutable.js"],function(global, require, module, exports) {  'use strict';
+__d('NavigatorBreadcrumbNavigationBar',["NavigatorBreadcrumbNavigationBarStyles","NavigatorNavigationBarStyles","React","StaticContainer.react","StyleSheet","View","immutable/dist/immutable.js","invariant"],function(global, require, module, exports) {  'use strict';
 
 
 
@@ -51872,10 +51875,13 @@ React.Text;var TextInput=React.TextInput;var View=React.View;var ScrollView=Reac
 var styles=require('listmo/styles/main.js').styles;
 var Display=require('react-native-device-display/display.js');
 
+var phonereg=/^\d{10}$/;
+
 var MainView=React.createClass({
 getInitialState:function(){
 return {
 showButtons:false,
+inputError:false,
 viewStyle:{
 height:0},
 
@@ -51885,7 +51891,7 @@ top:0}};},
 
 
 animateButtons:function(show){
-LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
+LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 this.setState({
 viewStyle:{
 height:show === true?60:0},
@@ -51896,14 +51902,15 @@ top:show === true?Display.height >= 667?0:-180:0}});},
 
 
 onInput:function(value){
-if(value == "")
+if(!value.match(phonereg))
 {
 this.setState({
-showButtons:false});
+showButtons:false,
+inputError:true});
 
 this.animateButtons(false);}else 
 {
-this.setState({showButtons:true});
+this.setState({showButtons:true,inputError:false});
 this.animateButtons(true);}
 
 
@@ -51955,7 +51962,7 @@ React.createElement(TextInput,{
 ref:'phone',
 placeholder:'Enter your phone #',
 keyboardType:'phone-pad',
-style:styles.input,
+style:[styles.input,{borderColor:this.state.inputError?'#bc3e3e':'#f0e8d7'}],
 placeholderTextColor:'#b2ac9f',
 onChangeText:this.onInput,
 onFocus:this.onFocus,
@@ -52040,8 +52047,7 @@ height:60,
 marginLeft:30,
 marginRight:30,
 marginTop:30,
-borderWidth:1,
-borderColor:'#f0e8d7'},
+borderWidth:1},
 
 button:{
 justifyContent:'center',
@@ -52168,7 +52174,7 @@ handler();});}}]);return Display;})();
 
 module.exports = new Display();
 });
-__d('listmo/views/profile.js',["react-native/Libraries/react-native/react-native.js","listmo/styles/main.js","react-native-icons/index.js"],function(global, require, module, exports) {  var React=require('react-native/Libraries/react-native/react-native.js');var 
+__d('listmo/views/profile.js',["react-native/Libraries/react-native/react-native.js","react-native-icons/index.js","listmo/styles/main.js"],function(global, require, module, exports) {  var React=require('react-native/Libraries/react-native/react-native.js');var 
 
 
 Text=
@@ -52606,7 +52612,8 @@ MapView=
 
 
 
-React.MapView;var Text=React.Text;var Modal=React.Modal;var TouchableHighlight=React.TouchableHighlight;var View=React.View;var _require=
+
+React.MapView;var Text=React.Text;var Modal=React.Modal;var TouchableHighlight=React.TouchableHighlight;var View=React.View;var LayoutAnimation=React.LayoutAnimation;var _require=
 
 require('react-native-icons/index.js');var Icon=_require.Icon;
 
@@ -52617,95 +52624,63 @@ navigator.geolocation.clearWatch(this.watchID);},
 
 
 componentDidMount:function(){
-var workorders=[
-{
-id:'0',
-pickup:{
-latitude:37.7846634,
-longitude:-122.4064989},
-
-dropoff:{
-latitude:37.7882726,
-longitude:-122.4057655},
-
-offered_pay:"24.00",
-deadline:"1443188069",
-items:"6 pack of budweiser, 1 bottle of champagne"},
-
-{
-id:'1',
-pickup:{
-latitude:37.7921456,
-longitude:-122.4191997},
-
-dropoff:{
-latitude:37.7908308,
-longitude:-122.4370415},
-
-offered_pay:"30.00",
-deadline:"1443188069",
-items:"6 sacks of flour, our bags of filo"}];
-
-
-
 
 var _this=this;
 
-navigator.geolocation.getCurrentPosition(function(initialPosition)
-{
+fetch('http://listmo.com/api/workorders/').
+then(function(resp){
+return resp.json();}).
 
-initialPosition.latitude = 37.7859513;
-initialPosition.longitude = -122.4064083;
-_this.setState({initialPosition:initialPosition});
+then(function(json){
+var workorders=json.open;
 
 for(var i=0;i < workorders.length;i++) 
 {
 workorders[i].annotations = [
 {
-latitude:workorders[i].pickup?workorders[i].pickup.latitude:workorders[i].dropoff.latitude,
-longitude:workorders[i].pickup?workorders[i].pickup.longitude:workorders[i].dropoff.longitude,
-title:workorders[i].pickup?'PICKUP':'SERVICE LOCATION',
+latitude:workorders[i].type == "Delivery"?workorders[i].from.lat:workorders[i].to.lat,
+longitude:workorders[i].type == "Delivery"?workorders[i].from.long:workorders[i].to.long,
+title:(workorders[i].type == "Delivery"?'from':'SERVICE LOCATION') + ' deadline: ' + workorders[i].deadline,
 subtitle:workorders[i].items,
 hasRightCallout:true,
 onRightCalloutPress:function(e){
 _this.popOrderConfirm(e.annotationId);},
 
-id:workorders[i].id}];
+pinColor:'purple',
+id:workorders[i].workorder}];
 
 
 
-if(workorders[i].pickup)
+if(workorders[i].type == "Delivery")
 {
 workorders[i].annotations.push(
 {
-latitude:workorders[i].dropoff.latitude,
-longitude:workorders[i].dropoff.longitude,
+latitude:workorders[i].to.lat,
+longitude:workorders[i].to.long,
 title:'DELIVER',
 subtitle:workorders[i].items,
 hasRightCallout:true,
 onRightCalloutPress:function(e){
 _this.popOrderConfirm(e.annotationId);},
 
-id:workorders[i].id});}
+id:workorders[i].workorder});}}
 
 
 
 
-var latDelta=Math.abs((workorders[i].pickup?workorders[i].pickup.latitude:workorders[i].dropoff.latitude) - (workorders[i].pickup?workorders[i].dropoff.latitude:initialPosition.latitude)) * 3;
-var longDelta=Math.abs((workorders[i].pickup?workorders[i].dropoff.longitude:initialPosition.longitude) - (workorders[i].pickup?workorders[i].pickup.longitude:workorders[i].dropoff.longitude)) * 3;
 
-workorders[i].region = {
-latitude:workorders[i].pickup?workorders[i].pickup.latitude:workorders[i].dropoff.latitude,
-longitude:workorders[i].pickup?workorders[i].pickup.longitude:workorders[i].dropoff.longitude,
-latitudeDelta:latDelta,
-longitudeDelta:longDelta};}
+_this.setState({workorders:workorders,currentWorkorder:workorders[0],refreshAnnotations:true});}).
+
+catch(function(error){
+console.log(error);});
 
 
+navigator.geolocation.getCurrentPosition(function(initialPosition)
+{
 
-setTimeout(function(){
-_this.setState({workorders:workorders,currentWorkorder:workorders[0]});},
-0);},
-
+initialPosition.latitude = 25.76628;
+initialPosition.longitude = -80.196188;
+_this.setState({initialPosition:initialPosition});},
 
 function(err){console.log(err);},{enableHighAccuracy:true,timeout:20000,maximumAge:1000});},
 
@@ -52714,12 +52689,12 @@ function(err){console.log(err);},{enableHighAccuracy:true,timeout:20000,maximumA
 getInitialState:function(){
 var _this=this;
 return {
-mapRegion:null,
-mapRegionInput:null,
 showModal:false,
+refreshAnnotations:null,
 selectedOrder:null,
 workorders:null,
-currentWorkorder:null};},
+currentWorkorder:null,
+acceptedHeight:0};},
 
 
 
@@ -52733,29 +52708,27 @@ this.setState({showModal:visible,selectedOrder:visible === false?null:id});},
 
 _prevOrder:function(){
 var index=this.state.workorders.indexOf(this.state.currentWorkorder);
-
 if(index > 0)
 {
-this.setState({currentWorkorder:this.state.workorders[index - 1]});}else 
+this.setState({currentWorkorder:this.state.workorders[index - 1],refreshAnnotations:true});}else 
 {
-this.setState({currentWorkorder:this.state.workorders[this.state.workorders.length - 1]});}},
+this.setState({currentWorkorder:this.state.workorders[this.state.workorders.length - 1],refreshAnnotations:true});}},
 
 
 
 _nextOrder:function(){
-
 var index=this.state.workorders.indexOf(this.state.currentWorkorder);
-
 if(index < this.state.workorders.length - 1)
 {
-this.setState({currentWorkorder:this.state.workorders[index + 1]});}else 
+this.setState({currentWorkorder:this.state.workorders[index + 1],refreshAnnotations:!this.state.refreshAnnotations});}else 
 {
-this.setState({currentWorkorder:this.state.workorders[0]});}},
+this.setState({currentWorkorder:this.state.workorders[0],refreshAnnotations:!this.state.refreshAnnotations});}},
 
 
 
 acceptOrder:function(id){
-console.log(id);},
+LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+this.setState({showModal:false,acceptedOrder:this.state.currentWorkorder,acceptedHeight:200});},
 
 
 render:function(){
@@ -52763,23 +52736,29 @@ return (
 React.createElement(View,{style:[styles.container,{alignItems:'stretch'}]},
 
 React.createElement(View,{style:{flexDirection:'row'}},
+!this.state.acceptedOrder && (this.state.workorders?this.state.workorders.length > 1:null)?
 React.createElement(TouchableHighlight,{onPress:this._prevOrder},
-React.createElement(Icon,{name:'fontawesome|angle-double-left',size:20,color:'white',style:{width:30,height:30,marginTop:20}})),
+React.createElement(Icon,{name:'fontawesome|angle-double-left',size:20,color:'white',style:{width:30,height:30,marginTop:20}})):
 
-React.createElement(Text,{style:[{flex:1},styles.label]},'WORK ORDERS'),
+null,
+React.createElement(Text,{style:[{flex:1},styles.label]},
+this.state.acceptedOrder?'CURRENT ORDER':'WORK ORDERS'),
 
-
+!this.state.acceptedOrder && (this.state.workorders?this.state.workorders.length > 1:null)?
 React.createElement(TouchableHighlight,{onPress:this._nextOrder},
-React.createElement(Icon,{name:'fontawesome|angle-double-right',size:20,color:'white',style:{width:30,height:30,marginTop:20}}))),
+React.createElement(Icon,{name:'fontawesome|angle-double-right',size:20,color:'white',style:{width:30,height:30,marginTop:20}})):
+
+null),
 
 
-
+!this.state.acceptedOrder?
 React.createElement(Text,{style:{alignSelf:'center',paddingBottom:10,fontSize:10,color:'#fff'}},'Order: ',
-this.state.workorders?this.state.workorders.indexOf(this.state.currentWorkorder) + 1:0,' of ',this.state.workorders?this.state.workorders.length:0),
+this.state.workorders?this.state.workorders.indexOf(this.state.currentWorkorder) + 1:0,' of ',this.state.workorders?this.state.workorders.length:0):
 
+null,
 
 React.createElement(Text,{style:{alignSelf:'center',paddingBottom:10,fontSize:20,color:'#fff'}},'Offer pay: $',
-this.state.currentWorkorder?this.state.currentWorkorder.offered_pay:0),
+this.state.currentWorkorder?this.state.currentWorkorder.pay:0),
 
 
 React.createElement(Modal,{
@@ -52788,9 +52767,9 @@ transparent:true,
 visible:this.state.showModal},
 React.createElement(View,{style:styles.modal},
 React.createElement(View,{style:styles.modalInner},
-React.createElement(Text,null,'All the information about the pickup.','\n','$$$ million moneys'),
-React.createElement(ReadyButton,{styles:styles,controller:this,orderId:this.state.selectedOrder}),
-React.createElement(CloseButton,{styles:styles,controller:this})))),
+React.createElement(Text,null,this.state.currentWorkorder?this.state.currentWorkorder.items:'','.','\n',' $',this.state.currentWorkorder?this.state.currentWorkorder.pay:''),
+!this.state.acceptedOrder?React.createElement(ReadyButton,{styles:styles,controller:this,orderId:this.state.currentWorkorder?this.state.currentWorkorder.id:'',onpress:this.acceptOrder,text:'ACCEPT'}):null,
+React.createElement(CloseButton,{styles:styles,controller:this,text:!this.state.acceptedOrder?'DECLINE':'CLOSE'})))),
 
 
 
@@ -52798,9 +52777,22 @@ React.createElement(CloseButton,{styles:styles,controller:this})))),
 React.createElement(MapView,{
 style:styles.map,
 showsUserLocation:true,
-region:this.state.currentWorkorder?this.state.currentWorkorder.region:null,
-annotations:this.state.currentWorkorder?this.state.currentWorkorder.annotations:null})));}});
+refreshAnnotations:this.state.refreshAnnotations || undefined,
+annotations:this.state.currentWorkorder?this.state.currentWorkorder.annotations:null,showAnnotations:true}),
 
+React.createElement(AcceptedOrder,{controller:this})));}});
+
+
+
+
+
+
+var AcceptedOrder=React.createClass({
+render:function(){
+return (
+React.createElement(View,{style:{height:this.props.controller.state.acceptedHeight}},
+React.createElement(ReadyButton,{text:'DONE',styles:styles,controller:this}),
+React.createElement(CloseButton,{text:'REPORT ISSUE',styles:styles,controller:this.props.controller})));}});
 
 
 
@@ -52812,8 +52804,8 @@ return (
 React.createElement(View,{style:[this.props.styles.button,{height:60}]},
 React.createElement(TouchableHighlight,{
 style:this.props.styles.blueButton,underlayColor:'#194c5b',
-onPress:this.props.controller.acceptOrder.bind(this.props.controller,this.props.orderId)},
-React.createElement(Text,{style:this.props.styles.buttonText},'ACCEPT'))));}});
+onPress:this.props.onpress},
+React.createElement(Text,{style:this.props.styles.buttonText},this.props.text))));}});
 
 
 
@@ -52827,7 +52819,7 @@ React.createElement(View,{style:[this.props.styles.button,{height:60}]},
 React.createElement(TouchableHighlight,{
 style:this.props.styles.redButton,underlayColor:'#194c5b',
 onPress:this.props.controller._setModalVisible.bind(this.props.controller,false)},
-React.createElement(Text,{style:this.props.styles.buttonText},'DECLINE'))));}});
+React.createElement(Text,{style:this.props.styles.buttonText},this.props.text))));}});
 
 
 
