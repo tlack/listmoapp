@@ -1358,12 +1358,13 @@ throw new TypeError(
 
 var index=findIndex.call(this,predicate,context);
 return index === -1?undefined:this[index];}});}})();
-__d('listmo/index.ios.js',["react-native/Libraries/react-native/react-native.js","listmo/views/profile.js","Dimensions","listmo/views/main.js"],function(global, require, module, exports) {  'use strict';
+__d('listmo/index.ios.js',["react-native/Libraries/react-native/react-native.js","Dimensions","listmo/views/main.js","listmo/views/profile.js","listmo/views/map.js"],function(global, require, module, exports) {  'use strict';
 
 var React=require('react-native/Libraries/react-native/react-native.js');
 
 var MainView=require('listmo/views/main.js');
-var ProfileView=require('listmo/views/profile.js');var 
+var ProfileView=require('listmo/views/profile.js');
+var MapView=require('listmo/views/map.js');var 
 
 
 AppRegistry=
@@ -1397,8 +1398,11 @@ switch(route.id){
 case "profile":
 next = React.createElement(ProfileView.view,{nav:nav});
 break;
+case "map":
+next = React.createElement(MapView.view,{nav:nav});
+break;
 default:
-next = React.createElement(MainView.view,{nav:nav});
+next = React.createElement(MapView.view,{nav:nav});
 break;}
 
 return next;},
@@ -5134,7 +5138,7 @@ NodeHandle.injection.injectImplementation(UniversalWorkerNodeHandle);}
 module.exports = {
 inject:inject};
 });
-__d('InitializeJavaScriptAppEngine',["RCTDebugComponentOwnership","RCTDeviceEventEmitter","PerformanceLogger","regenerator/runtime.js","ExceptionsManager","ErrorUtils","ExceptionsManager","Platform","checkFlowAtRuntime","JSTimers","NativeModules","Promise","XMLHttpRequest","FormData","fetch","Geolocation","WebSocket","BridgeProfiling"],function(global, require, module, exports) {  require(
+__d('InitializeJavaScriptAppEngine',["RCTDebugComponentOwnership","RCTDeviceEventEmitter","PerformanceLogger","ExceptionsManager","ErrorUtils","ExceptionsManager","Platform","checkFlowAtRuntime","JSTimers","NativeModules","Promise","XMLHttpRequest","FormData","fetch","Geolocation","WebSocket","BridgeProfiling","regenerator/runtime.js"],function(global, require, module, exports) {  require(
 
 
 
@@ -28549,7 +28553,7 @@ this.emit(arg.eventType,arg.data,arg.didEmitCallback);}}}]);return NavigationEve
 
 module.exports = NavigationEventEmitter;
 });
-__d('NavigatorBreadcrumbNavigationBar',["NavigatorBreadcrumbNavigationBarStyles","NavigatorNavigationBarStyles","React","StaticContainer.react","StyleSheet","View","immutable/dist/immutable.js","invariant"],function(global, require, module, exports) {  'use strict';
+__d('NavigatorBreadcrumbNavigationBar',["NavigatorBreadcrumbNavigationBarStyles","NavigatorNavigationBarStyles","React","StaticContainer.react","StyleSheet","View","invariant","immutable/dist/immutable.js"],function(global, require, module, exports) {  'use strict';
 
 
 
@@ -51854,7 +51858,7 @@ Object.keys(componentOrElement));}
 
 module.exports = findDOMNode;
 });
-__d('listmo/views/main.js',["react-native/Libraries/react-native/react-native.js","listmo/styles/main.js"],function(global, require, module, exports) {  var React=require('react-native/Libraries/react-native/react-native.js');var 
+__d('listmo/views/main.js',["react-native/Libraries/react-native/react-native.js","listmo/styles/main.js","react-native-device-display/display.js"],function(global, require, module, exports) {  var React=require('react-native/Libraries/react-native/react-native.js');var 
 
 
 Text=
@@ -51866,6 +51870,7 @@ Text=
 React.Text;var TextInput=React.TextInput;var View=React.View;var ScrollView=React.ScrollView;var TouchableHighlight=React.TouchableHighlight;var LayoutAnimation=React.LayoutAnimation;
 
 var styles=require('listmo/styles/main.js').styles;
+var Display=require('react-native-device-display/display.js');
 
 var MainView=React.createClass({
 getInitialState:function(){
@@ -51886,7 +51891,7 @@ viewStyle:{
 height:show === true?60:0},
 
 containerViewStyle:{
-top:show === true?-180:-60}});},
+top:show === true?Display.height >= 667?0:-180:0}});},
 
 
 
@@ -51908,7 +51913,7 @@ onFocus:function(){
 LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 this.setState({
 containerViewStyle:{
-top:-60}});},
+top:this.state.showButtons === true?Display.height >= 667?0:-180:0}});},
 
 
 
@@ -51921,12 +51926,18 @@ top:0}});},
 
 
 login:function(){
+if(this.state.showButtons === true)
+{
 this.props.nav.push({
 title:'Profile',
-id:'profile'});},
+id:'profile'});}},
 
 
-register:function(){},
+
+register:function(){
+if(this.state.showButtons === true)
+{}},
+
 
 
 containerTouched:function(e){
@@ -51993,7 +52004,8 @@ React.createElement(Text,{style:this.props.styles.buttonText},'REGISTER'))));}})
 
 module.exports.view = MainView;
 });
-__d('listmo/styles/main.js',["react-native/Libraries/react-native/react-native.js"],function(global, require, module, exports) {  var React=require('react-native/Libraries/react-native/react-native.js');var 
+__d('listmo/styles/main.js',["react-native/Libraries/react-native/react-native.js","react-native-device-display/display.js"],function(global, require, module, exports) {  var React=require('react-native/Libraries/react-native/react-native.js');
+var Display=require('react-native-device-display/display.js');var 
 
 
 StyleSheet=
@@ -52050,6 +52062,11 @@ flex:1,
 backgroundColor:'#79bc3e',
 justifyContent:'center'},
 
+redButton:{
+flex:1,
+backgroundColor:'#bc3e3e',
+justifyContent:'center'},
+
 buttonText:{
 fontSize:20,
 textAlign:'center',
@@ -52058,11 +52075,98 @@ fontFamily:'khand'},
 
 icons:{
 height:100,
-width:100}});
+width:100},
+
+map:{
+flex:1,
+width:Display.width,
+borderWidth:1,
+borderColor:'#fff'},
+
+modal:{
+flex:1,
+justifyContent:'center',
+padding:20,
+backgroundColor:'rgba(0,0,0,0.5)'},
+
+modalInner:{
+borderRadius:10,
+padding:20,
+backgroundColor:'#fff'},
+
+modalButton:{
+marginTop:10}});
 
 
 
 module.exports.styles = styles;
+});
+__d('react-native-device-display/display.js',["react-native/Libraries/react-native/react-native.js"],function(global, require, module, exports) {  var _createClass=(function(){function defineProperties(target,props){for(var i=0;i < props.length;i++) {var descriptor=props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if('value' in descriptor)descriptor.writable = true;Object.defineProperty(target,descriptor.key,descriptor);}}return function(Constructor,protoProps,staticProps){if(protoProps)defineProperties(Constructor.prototype,protoProps);if(staticProps)defineProperties(Constructor,staticProps);return Constructor;};})();function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor)){throw new TypeError('Cannot call a class as a function');}}var _require=require('react-native/Libraries/react-native/react-native.js');var NativeModules=_require.NativeModules;
+
+var DeviceUtil=NativeModules.DisplayDeviceUtil;
+var Dimensions=require('Dimensions');
+var RCTDeviceEventEmitter=require('RCTDeviceEventEmitter');var 
+
+Display=(function(){_createClass(Display,[{key:'updateProps',value:
+
+function updateProps(newWidth,newHeight){
+this.width = newWidth;
+this.height = newHeight;}}]);
+
+
+function Display(){_classCallCheck(this,Display);
+this.width = Dimensions.get("window").width;
+this.height = Dimensions.get("window").height;}_createClass(Display,[{key:'percentage',value:
+
+
+function percentage(type,value){
+if(type == 'width'){
+return value * (this.height / 100);}else 
+if(type == 'height'){
+return value * (this.width / 100);}else 
+{
+return 'Invalid Type (width / height)';}}},{key:'isPortrait',value:
+
+
+
+function isPortrait(){
+if(this.width < this.height){
+return true;}else 
+{
+return false;}}},{key:'isLandscape',value:
+
+
+
+function isLandscape(){
+if(this.width > this.height){
+return true;}else 
+{
+return false;}}},{key:'isTablet',value:
+
+
+
+function isTablet(){
+return DeviceUtil.isTablet;}},{key:'isPhone',value:
+
+
+function isPhone(){
+return DeviceUtil.isPhone;}},{key:'onOrientationDidChange',value:
+
+
+function onOrientationDidChange(handler){
+var main=this;
+return RCTDeviceEventEmitter.addListener(
+'orientationDidChange',
+function(newDimensions){
+main.updateProps(newDimensions.width,newDimensions.height);
+handler();});}}]);return Display;})();
+
+
+
+
+
+
+module.exports = new Display();
 });
 __d('listmo/views/profile.js',["react-native/Libraries/react-native/react-native.js","listmo/styles/main.js","react-native-icons/index.js"],function(global, require, module, exports) {  var React=require('react-native/Libraries/react-native/react-native.js');var 
 
@@ -52081,8 +52185,17 @@ return {
 profile:{
 name:'Pepe Billete',
 phone:'3052838527',
-is_active:true}};},
+is_activated:true}};},
 
+
+
+onDuty:function(){
+this.props.nav.push({
+title:'Map',
+id:'map'});},
+
+
+history:function(){},
 
 
 render:function(){
@@ -52094,8 +52207,8 @@ React.createElement(Text,{style:styles.welcome},'YOUR PROFILE'),
 React.createElement(Icon,{name:'fontawesome|user',size:60,color:'white',style:styles.icons}),
 React.createElement(Text,{style:styles.label},this.state.profile.name),
 React.createElement(Text,{style:styles.label},this.state.profile.phone),
-this.state.profile.is_active?React.createElement(ReadyButton,{styles:styles,controller:this}):null,
-this.state.profile.is_active?React.createElement(HistoryButton,{styles:styles,controller:this}):null));}});
+this.state.profile.is_activated?React.createElement(ReadyButton,{styles:styles,controller:this}):null,
+this.state.profile.is_activated?React.createElement(HistoryButton,{styles:styles,controller:this}):null));}});
 
 
 
@@ -52104,10 +52217,10 @@ this.state.profile.is_active?React.createElement(HistoryButton,{styles:styles,co
 var ReadyButton=React.createClass({
 render:function(){
 return (
-React.createElement(View,{style:this.props.styles.button},
+React.createElement(View,{style:[this.props.styles.button,{height:60}]},
 React.createElement(TouchableHighlight,{
 style:this.props.styles.blueButton,underlayColor:'#194c5b',
-onPress:this.props.controller.login},
+onPress:this.props.controller.onDuty},
 React.createElement(Text,{style:this.props.styles.buttonText},'ON DUTY'))));}});
 
 
@@ -52118,9 +52231,10 @@ React.createElement(Text,{style:this.props.styles.buttonText},'ON DUTY'))));}});
 var HistoryButton=React.createClass({
 render:function(){
 return (
-React.createElement(View,{style:this.props.styles.button},
+React.createElement(View,{style:[this.props.styles.button,{height:60}]},
 React.createElement(TouchableHighlight,{
-style:this.props.styles.greenButton,underlayColor:'#194c5b'},
+style:this.props.styles.greenButton,underlayColor:'#194c5b',
+onPress:this.props.controller.history},
 React.createElement(Text,{style:this.props.styles.buttonText},'HISTORY'))));}});
 
 
@@ -52479,6 +52593,248 @@ overflow:'hidden'}});
 var SMXLoadingImageView=requireNativeComponent('FAKIconImage',SMXLoadingImage);
 
 module.exports = SMXLoadingImage;
+});
+__d('listmo/views/map.js',["react-native/Libraries/react-native/react-native.js","listmo/styles/main.js","react-native-icons/index.js"],function(global, require, module, exports) {  'use strict';
+
+var React=require('react-native/Libraries/react-native/react-native.js');
+var styles=require('listmo/styles/main.js').styles;var 
+
+
+
+MapView=
+
+
+
+
+React.MapView;var Text=React.Text;var Modal=React.Modal;var TouchableHighlight=React.TouchableHighlight;var View=React.View;var _require=
+
+require('react-native-icons/index.js');var Icon=_require.Icon;
+
+var MapViewExample=React.createClass({
+
+componentWillUnmount:function(){
+navigator.geolocation.clearWatch(this.watchID);},
+
+
+componentDidMount:function(){
+var workorders=[
+{
+id:'0',
+pickup:{
+latitude:37.7846634,
+longitude:-122.4064989},
+
+dropoff:{
+latitude:37.7882726,
+longitude:-122.4057655},
+
+offered_pay:"24.00",
+deadline:"1443188069",
+items:"6 pack of budweiser, 1 bottle of champagne"},
+
+{
+id:'1',
+pickup:{
+latitude:37.7921456,
+longitude:-122.4191997},
+
+dropoff:{
+latitude:37.7908308,
+longitude:-122.4370415},
+
+offered_pay:"30.00",
+deadline:"1443188069",
+items:"6 sacks of flour, our bags of filo"}];
+
+
+
+
+var _this=this;
+
+navigator.geolocation.getCurrentPosition(function(initialPosition)
+{
+
+initialPosition.latitude = 37.7859513;
+initialPosition.longitude = -122.4064083;
+_this.setState({initialPosition:initialPosition});
+
+for(var i=0;i < workorders.length;i++) 
+{
+workorders[i].annotations = [
+{
+latitude:workorders[i].pickup?workorders[i].pickup.latitude:workorders[i].dropoff.latitude,
+longitude:workorders[i].pickup?workorders[i].pickup.longitude:workorders[i].dropoff.longitude,
+title:workorders[i].pickup?'PICKUP':'SERVICE LOCATION',
+subtitle:workorders[i].items,
+hasRightCallout:true,
+onRightCalloutPress:function(e){
+_this.popOrderConfirm(e.annotationId);},
+
+id:workorders[i].id}];
+
+
+
+if(workorders[i].pickup)
+{
+workorders[i].annotations.push(
+{
+latitude:workorders[i].dropoff.latitude,
+longitude:workorders[i].dropoff.longitude,
+title:'DELIVER',
+subtitle:workorders[i].items,
+hasRightCallout:true,
+onRightCalloutPress:function(e){
+_this.popOrderConfirm(e.annotationId);},
+
+id:workorders[i].id});}
+
+
+
+
+var latDelta=Math.abs((workorders[i].pickup?workorders[i].pickup.latitude:workorders[i].dropoff.latitude) - (workorders[i].pickup?workorders[i].dropoff.latitude:initialPosition.latitude)) * 3;
+var longDelta=Math.abs((workorders[i].pickup?workorders[i].dropoff.longitude:initialPosition.longitude) - (workorders[i].pickup?workorders[i].pickup.longitude:workorders[i].dropoff.longitude)) * 3;
+
+workorders[i].region = {
+latitude:workorders[i].pickup?workorders[i].pickup.latitude:workorders[i].dropoff.latitude,
+longitude:workorders[i].pickup?workorders[i].pickup.longitude:workorders[i].dropoff.longitude,
+latitudeDelta:latDelta,
+longitudeDelta:longDelta};}
+
+
+
+setTimeout(function(){
+_this.setState({workorders:workorders,currentWorkorder:workorders[0]});},
+0);},
+
+
+function(err){console.log(err);},{enableHighAccuracy:true,timeout:20000,maximumAge:1000});},
+
+
+
+getInitialState:function(){
+var _this=this;
+return {
+mapRegion:null,
+mapRegionInput:null,
+showModal:false,
+selectedOrder:null,
+workorders:null,
+currentWorkorder:null};},
+
+
+
+popOrderConfirm:function(id){
+this._setModalVisible(true,id);},
+
+
+_setModalVisible:function(visible,id){
+this.setState({showModal:visible,selectedOrder:visible === false?null:id});},
+
+
+_prevOrder:function(){
+var index=this.state.workorders.indexOf(this.state.currentWorkorder);
+
+if(index > 0)
+{
+this.setState({currentWorkorder:this.state.workorders[index - 1]});}else 
+{
+this.setState({currentWorkorder:this.state.workorders[this.state.workorders.length - 1]});}},
+
+
+
+_nextOrder:function(){
+
+var index=this.state.workorders.indexOf(this.state.currentWorkorder);
+
+if(index < this.state.workorders.length - 1)
+{
+this.setState({currentWorkorder:this.state.workorders[index + 1]});}else 
+{
+this.setState({currentWorkorder:this.state.workorders[0]});}},
+
+
+
+acceptOrder:function(id){
+console.log(id);},
+
+
+render:function(){
+return (
+React.createElement(View,{style:[styles.container,{alignItems:'stretch'}]},
+
+React.createElement(View,{style:{flexDirection:'row'}},
+React.createElement(TouchableHighlight,{onPress:this._prevOrder},
+React.createElement(Icon,{name:'fontawesome|angle-double-left',size:20,color:'white',style:{width:30,height:30,marginTop:20}})),
+
+React.createElement(Text,{style:[{flex:1},styles.label]},'WORK ORDERS'),
+
+
+React.createElement(TouchableHighlight,{onPress:this._nextOrder},
+React.createElement(Icon,{name:'fontawesome|angle-double-right',size:20,color:'white',style:{width:30,height:30,marginTop:20}}))),
+
+
+
+React.createElement(Text,{style:{alignSelf:'center',paddingBottom:10,fontSize:10,color:'#fff'}},'Order: ',
+this.state.workorders?this.state.workorders.indexOf(this.state.currentWorkorder) + 1:0,' of ',this.state.workorders?this.state.workorders.length:0),
+
+
+React.createElement(Text,{style:{alignSelf:'center',paddingBottom:10,fontSize:20,color:'#fff'}},'Offer pay: $',
+this.state.currentWorkorder?this.state.currentWorkorder.offered_pay:0),
+
+
+React.createElement(Modal,{
+animated:true,
+transparent:true,
+visible:this.state.showModal},
+React.createElement(View,{style:styles.modal},
+React.createElement(View,{style:styles.modalInner},
+React.createElement(Text,null,'All the information about the pickup.','\n','$$$ million moneys'),
+React.createElement(ReadyButton,{styles:styles,controller:this,orderId:this.state.selectedOrder}),
+React.createElement(CloseButton,{styles:styles,controller:this})))),
+
+
+
+
+React.createElement(MapView,{
+style:styles.map,
+showsUserLocation:true,
+region:this.state.currentWorkorder?this.state.currentWorkorder.region:null,
+annotations:this.state.currentWorkorder?this.state.currentWorkorder.annotations:null})));}});
+
+
+
+
+
+
+var ReadyButton=React.createClass({
+render:function(){
+return (
+React.createElement(View,{style:[this.props.styles.button,{height:60}]},
+React.createElement(TouchableHighlight,{
+style:this.props.styles.blueButton,underlayColor:'#194c5b',
+onPress:this.props.controller.acceptOrder.bind(this.props.controller,this.props.orderId)},
+React.createElement(Text,{style:this.props.styles.buttonText},'ACCEPT'))));}});
+
+
+
+
+
+
+var CloseButton=React.createClass({
+render:function(){
+return (
+React.createElement(View,{style:[this.props.styles.button,{height:60}]},
+React.createElement(TouchableHighlight,{
+style:this.props.styles.redButton,underlayColor:'#194c5b',
+onPress:this.props.controller._setModalVisible.bind(this.props.controller,false)},
+React.createElement(Text,{style:this.props.styles.buttonText},'DECLINE'))));}});
+
+
+
+
+
+
+module.exports.view = MapViewExample;
 });
 ;require("listmo/index.ios.js");
 //@ sourceMappingURL=/index.ios.map
