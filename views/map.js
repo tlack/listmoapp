@@ -42,12 +42,18 @@ var MapViewExample = React.createClass({
 
 					for(var i=0;i<workorders.length;i++)
 					{
+						var items = "";
+						for(var j=0;j<workorders[i].item_list.length;j++)
+						{
+							items += workorders[i].item_list[j].qty + "x " + workorders[i].item_list[j].item + "\n";
+						}
+						workorders[i].items = items;
 						workorders[i].annotations = [
 							{
 								latitude: workorders[i].type == "Delivery" ? workorders[i].from.lat : workorders[i].to.lat,
 								longitude: workorders[i].type == "Delivery" ? workorders[i].from.long : workorders[i].to.long,
 								title: (workorders[i].type == "Delivery" ? 'PICKUP' : 'SERVICE LOCATION') + ' deadline: ' + workorders[i].deadline,
-								subtitle: workorders[i].items,
+								subtitle: items,
 								hasRightCallout: true,
 								onRightCalloutPress: function(e){
 									_this.popOrderConfirm(e.annotationId);
@@ -63,8 +69,8 @@ var MapViewExample = React.createClass({
 								{
 									latitude: workorders[i].to.lat,
 									longitude: workorders[i].to.long,
-									title: 'DELIVER',
-									subtitle: workorders[i].items,
+									title: 'DELIVER' + ' deadline: ' + workorders[i].deadline,
+									subtitle: items,
 									hasRightCallout: true,
 									onRightCalloutPress: function(e){
 										_this.popOrderConfirm(e.annotationId);
@@ -166,7 +172,14 @@ var MapViewExample = React.createClass({
 		          visible={this.state.showModal}>
 		          <View style={styles.modal}>
 		            <View style={styles.modalInner}>
-		              <Text>{this.state.currentWorkorder ? this.state.currentWorkorder.items : ''}.{'\n'} ${this.state.currentWorkorder? this.state.currentWorkorder.pay : ''}</Text>
+		              <Text>{this.state.currentWorkorder ? this.state.currentWorkorder.items : ''}{'\n'}{this.state.currentWorkorder ? '$' + this.state.currentWorkorder.pay : ''}{'\n'}</Text>
+		              <Text>{this.state.currentWorkorder !== null ? (this.state.currentWorkorder.type === "Delivery" ? 
+		              	"from: \n" + this.state.currentWorkorder.from.name + '\n' +
+		              	this.state.currentWorkorder.from.addr + '\n' + '\n' +
+		              	"to: \n" + this.state.currentWorkorder.to.name + '\n' + 
+		              	this.state.currentWorkorder.to.addr + '\n'
+		              	 : this.state.currentWorkorder.to.name + '\n' +
+		              	this.state.currentWorkorder.to.addr + '\n') : null}</Text>
 		              {!this.state.acceptedOrder ? <ReadyButton styles={styles} controller={this} orderId={this.state.currentWorkorder ? this.state.currentWorkorder.id : ''} onpress={this.acceptOrder} text={'ACCEPT'}/> : null }
 		              <CloseButton styles={styles} controller={this} text={!this.state.acceptedOrder ? 'DECLINE' : 'CLOSE'}/>
 		            </View>
