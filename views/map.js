@@ -16,7 +16,7 @@ var {
 
 var { Icon, } = require('react-native-icons');
 
-var MapViewExample = React.createClass({
+var WorkOrders = React.createClass({
 
 	componentWillUnmount() {
     	navigator.geolocation.clearWatch(this.watchID);
@@ -238,4 +238,4 @@ var CloseButton = React.createClass({
 	}
 })
 
-module.exports.view = MapViewExample;
+module.exports.view = WorkOrders;
