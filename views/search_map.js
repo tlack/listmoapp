@@ -62,8 +62,8 @@ var SearchMapView = React.createClass({
     login() {
         // pop login scene ... for now show profile
         this.props.nav.push({
-            title: 'Profile',
-            id: 'profile'
+            title: 'Become A Driver',
+            id: 'main'
         });
     },
 
@@ -80,7 +80,7 @@ var SearchMapView = React.createClass({
                         </Text>
                         <TouchableHighlight style={{position: 'absolute', right: 20, top: 16}} onPress={this.login}>
                                 <Text style={[styles.buttonText, {fontSize: 16}]}>
-                                    🔐{'\n'}Login
+                                    💰{'\n'}Make Money
                                 </Text>
                             </TouchableHighlight>
                     </View>

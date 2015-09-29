@@ -38,13 +38,16 @@ var listmo = React.createClass({
 		switch(route.id) {
 			case "profile":
 				next = <ProfileView.view nav={nav}/>
-			break;
+				break;
 			case "map":
 				next = <WorkOrders.view nav={nav}/>
-			break;
-			default: 
+				break;
+			case "main":
 				next = <MainView.view nav={nav}/>
-			break;
+				break;
+			default: 
+				next = <SearchMapView.view nav={nav}/>
+				break;
 		}
 		return next;
 	},
