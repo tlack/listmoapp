@@ -33,13 +33,14 @@ var SearchMapView = React.createClass({
                     var driverLocs = json.recentlocs;
                     var driversAnnotations = [];
                     if(json.success === true){
-                        driverLocs.map((driver) => {
-                            driversAnnotations = [{
+                        driverLocs.forEach((driver) => {
+                            driversAnnotations.push({
                                 latitude: driver.lat,
                                 longitude: driver.long,
                                 title: driver.cust,
-                                pinColor: 'green'
-                            }]
+                                pinColor: 'green',
+                                id: 'id-' + Math.random()
+                            });
                         });
                         self.setState({drivers: driversAnnotations});
                     }
@@ -93,7 +94,7 @@ var SearchMapView = React.createClass({
                         <Icon name='fontawesome|search' size={20} color='#CCC' style={styles.searchBoxIcon}/>
                     </View>
                 </View>
-                <MapView style={styles.map} showsUserLocation={true} annotations={this.state.drivers} showAnnotations={true} />
+                <MapView style={styles.map} showsUserLocation={true} annotations={this.state.drivers} showAnnotations={true} refreshAnnotations={true} />
 
             </View>
         );
