@@ -1358,13 +1358,14 @@ throw new TypeError(
 
 var index=findIndex.call(this,predicate,context);
 return index === -1?undefined:this[index];}});}})();
-__d('listmo/index.ios.js',["react-native/Libraries/react-native/react-native.js","listmo/views/profile.js","Dimensions","listmo/views/main.js","listmo/views/map.js"],function(global, require, module, exports) {  'use strict';
+__d('listmo/index.ios.js',["react-native/Libraries/react-native/react-native.js","listmo/views/main.js","listmo/views/profile.js","listmo/views/map.js","Dimensions","listmo/views/search_map.js"],function(global, require, module, exports) {  'use strict';
 
 var React=require('react-native/Libraries/react-native/react-native.js');
 
 var MainView=require('listmo/views/main.js');
 var ProfileView=require('listmo/views/profile.js');
-var MapView=require('listmo/views/map.js');var 
+var WorkOrders=require('listmo/views/map.js');
+var SearchMapView=require('listmo/views/search_map.js');var 
 
 
 AppRegistry=
@@ -1399,10 +1400,13 @@ case "profile":
 next = React.createElement(ProfileView.view,{nav:nav});
 break;
 case "map":
-next = React.createElement(MapView.view,{nav:nav});
+next = React.createElement(WorkOrders.view,{nav:nav});
+break;
+case "main":
+next = React.createElement(MainView.view,{nav:nav});
 break;
 default:
-next = React.createElement(MapView.view,{nav:nav});
+next = React.createElement(SearchMapView.view,{nav:nav});
 break;}
 
 return next;},
@@ -51861,7 +51865,8 @@ Object.keys(componentOrElement));}
 
 module.exports = findDOMNode;
 });
-__d('listmo/views/main.js',["react-native/Libraries/react-native/react-native.js","listmo/styles/main.js","react-native-device-display/display.js"],function(global, require, module, exports) {  var React=require('react-native/Libraries/react-native/react-native.js');var 
+__d('listmo/views/main.js',["react-native/Libraries/react-native/react-native.js","listmo/styles/main.js","react-native-device-display/display.js"],function(global, require, module, exports) {  'use strict';
+var React=require('react-native/Libraries/react-native/react-native.js');var 
 
 
 Text=
@@ -51870,18 +51875,22 @@ Text=
 
 
 
-React.Text;var TextInput=React.TextInput;var View=React.View;var ScrollView=React.ScrollView;var TouchableHighlight=React.TouchableHighlight;var LayoutAnimation=React.LayoutAnimation;
+
+React.Text;var TextInput=React.TextInput;var View=React.View;var ScrollView=React.ScrollView;var TouchableHighlight=React.TouchableHighlight;var LayoutAnimation=React.LayoutAnimation;var AsyncStorage=React.AsyncStorage;
 
 var styles=require('listmo/styles/main.js').styles;
 var Display=require('react-native-device-display/display.js');
 
 var phonereg=/^\d{10}$/;
+var SESSION_KEY='@AsyncStorageListmo:sess';
+var PHONE_KEY='@AsyncStorageListmo:phone';
 
 var MainView=React.createClass({
 getInitialState:function(){
 return {
 showButtons:false,
 inputError:false,
+phone:null,
 viewStyle:{
 height:0},
 
@@ -51910,7 +51919,7 @@ inputError:true});
 
 this.animateButtons(false);}else 
 {
-this.setState({showButtons:true,inputError:false});
+this.setState({showButtons:true,inputError:false,phone:value});
 this.animateButtons(true);}
 
 
@@ -51932,12 +51941,33 @@ top:0}});},
 
 
 
-login:function(){
+login:function(){var _this=this;
 if(this.state.showButtons === true)
 {
-this.props.nav.push({
+
+this.setState({ajax:true});
+
+fetch('http://listmo.com/api/user/login?num=' + this.state.phone).
+then(function(response){return response.json();}).
+then(function(response){
+_this.setState({ajax:false});
+if(response.success === true)
+{
+AsyncStorage.setItem(SESSION_KEY,response.sess);
+AsyncStorage.setItem(PHONE_KEY,_this.state.phone);
+
+_this.props.nav.push({
 title:'Profile',
-id:'profile'});}},
+id:'profile'});}else 
+
+
+{
+
+_this.setState({errorMessage:response.msg});}}).
+
+
+catch(function(error){
+console.warn(error);});}},
 
 
 
@@ -52101,7 +52131,26 @@ padding:20,
 backgroundColor:'#fff'},
 
 modalButton:{
-marginTop:10}});
+marginTop:10},
+
+searchBox:{
+height:40,
+borderWidth:1,
+margin:10,
+backgroundColor:'white',
+paddingLeft:10,
+borderRadius:5,
+flex:1},
+
+searchBoxIcon:{
+width:30,
+height:30,
+alignSelf:'center',
+backgroundColor:'transparent',
+
+
+
+position:'absolute',right:10,top:14}});
 
 
 
@@ -52174,7 +52223,7 @@ handler();});}}]);return Display;})();
 
 module.exports = new Display();
 });
-__d('listmo/views/profile.js',["react-native/Libraries/react-native/react-native.js","react-native-icons/index.js","listmo/styles/main.js"],function(global, require, module, exports) {  var React=require('react-native/Libraries/react-native/react-native.js');var 
+__d('listmo/views/profile.js',["react-native/Libraries/react-native/react-native.js","listmo/styles/main.js","react-native-icons/index.js"],function(global, require, module, exports) {  var React=require('react-native/Libraries/react-native/react-native.js');var 
 
 
 Text=
@@ -52613,20 +52662,50 @@ MapView=
 
 
 
-React.MapView;var Text=React.Text;var Modal=React.Modal;var TouchableHighlight=React.TouchableHighlight;var View=React.View;var LayoutAnimation=React.LayoutAnimation;var _require=
+
+
+React.MapView;var Text=React.Text;var Modal=React.Modal;var TouchableHighlight=React.TouchableHighlight;var View=React.View;var LayoutAnimation=React.LayoutAnimation;var NativeAppEventEmitter=React.NativeAppEventEmitter;var AsyncStorage=React.AsyncStorage;var _require=
 
 require('react-native-icons/index.js');var Icon=_require.Icon;
+var SESSION_KEY='@AsyncStorageListmo:sess';
+var session=null;
 
-var MapViewExample=React.createClass({
+var WorkOrders=React.createClass({
 
 componentWillUnmount:function(){
 navigator.geolocation.clearWatch(this.watchID);},
 
 
-componentDidMount:function(){
+_loadInitialState:function callee$0$0(){return regeneratorRuntime.async(function callee$0$0$(context$1$0){while(1) switch(context$1$0.prev = context$1$0.next){case 0:context$1$0.prev = 0;context$1$0.next = 3;return regeneratorRuntime.awrap(
+
+AsyncStorage.getItem(SESSION_KEY));case 3:session = context$1$0.sent;context$1$0.next = 9;break;case 6:context$1$0.prev = 6;context$1$0.t0 = context$1$0['catch'](0);
+
+console.log(context$1$0.t0);case 9:case 'end':return context$1$0.stop();}},null,this,[[0,6]]);},
+
+
+
+componentDidMount:function(){var _this2=this;
 
 var _this=this;
+var first=true;
 
+this._loadInitialState().done();
+
+navigator.geolocation.getCurrentPosition(
+function(initialPosition){return _this2.setState({currentLocation:initialPosition});},
+function(error){return alert(error.message);},
+{enableHighAccuracy:true,timeout:20000,maximumAge:1000});
+
+
+this.watchID = navigator.geolocation.watchPosition(function(lastPosition){
+_this2.setState({currentLocation:lastPosition});});
+
+
+var subscription=NativeAppEventEmitter.addListener(
+'MapCompleted',
+function(e){
+if(first === true)
+{
 fetch('http://listmo.com/api/workorders/').
 then(function(resp){
 return resp.json();}).
@@ -52636,12 +52715,18 @@ var workorders=json.open;
 
 for(var i=0;i < workorders.length;i++) 
 {
+var items="";
+for(var j=0;j < workorders[i].item_list.length;j++) 
+{
+items += workorders[i].item_list[j].qty + "x " + workorders[i].item_list[j].item + "\n";}
+
+workorders[i].items = items;
 workorders[i].annotations = [
 {
 latitude:workorders[i].type == "Delivery"?workorders[i].from.lat:workorders[i].to.lat,
 longitude:workorders[i].type == "Delivery"?workorders[i].from.long:workorders[i].to.long,
-title:(workorders[i].type == "Delivery"?'from':'SERVICE LOCATION') + ' deadline: ' + workorders[i].deadline,
-subtitle:workorders[i].items,
+title:(workorders[i].type == "Delivery"?'PICKUP':'SERVICE LOCATION') + ' deadline: ' + workorders[i].deadline,
+subtitle:items,
 hasRightCallout:true,
 onRightCalloutPress:function(e){
 _this.popOrderConfirm(e.annotationId);},
@@ -52657,8 +52742,8 @@ workorders[i].annotations.push(
 {
 latitude:workorders[i].to.lat,
 longitude:workorders[i].to.long,
-title:'DELIVER',
-subtitle:workorders[i].items,
+title:'DELIVER' + ' deadline: ' + workorders[i].deadline,
+subtitle:items,
 hasRightCallout:true,
 onRightCalloutPress:function(e){
 _this.popOrderConfirm(e.annotationId);},
@@ -52672,17 +52757,10 @@ id:workorders[i].workorder});}}
 _this.setState({workorders:workorders,currentWorkorder:workorders[0],refreshAnnotations:true});}).
 
 catch(function(error){
-console.log(error);});
+console.log(error);});}});},
 
 
-navigator.geolocation.getCurrentPosition(function(initialPosition)
-{
 
-initialPosition.latitude = 25.76628;
-initialPosition.longitude = -80.196188;
-_this.setState({initialPosition:initialPosition});},
-
-function(err){console.log(err);},{enableHighAccuracy:true,timeout:20000,maximumAge:1000});},
 
 
 
@@ -52690,6 +52768,7 @@ getInitialState:function(){
 var _this=this;
 return {
 showModal:false,
+currentLocation:null,
 refreshAnnotations:null,
 selectedOrder:null,
 workorders:null,
@@ -52728,7 +52807,28 @@ this.setState({currentWorkorder:this.state.workorders[0],refreshAnnotations:!thi
 
 acceptOrder:function(id){
 LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-this.setState({showModal:false,acceptedOrder:this.state.currentWorkorder,acceptedHeight:200});},
+this.setState({showModal:false,acceptedOrder:this.state.currentWorkorder,acceptedHeight:200});
+
+this._startPolling();},
+
+
+_startPolling:function(){var _this3=this;
+console.log("start polling for location");
+fetch('http://listmo.com/api/user/update?s=' + session + '&lat=' + this.state.currentLocation.coords.latitude + '&long=' + this.state.currentLocation.coords.longitude).then(function(response){return response.json();}).then(function(response){console.log(response);}).catch(function(error){console.log(error);});
+this.polling = setInterval(function(){
+
+console.log("update");
+fetch('http://listmo.com/api/user/update?s=' + session + '&lat=' + _this3.state.currentLocation.coords.latitude + '&long=' + _this3.state.currentLocation.coords.longitude).then(function(response){return response.json();}).then(function(response){console.log(response);}).catch(function(error){console.log(error);});},
+60000);},
+
+
+_stopPolling:function(){
+console.log("stop polling for location");
+clearInterval(this.polling);},
+
+
+_completeOrder:function(){
+this._stopPolling();},
 
 
 render:function(){
@@ -52767,7 +52867,14 @@ transparent:true,
 visible:this.state.showModal},
 React.createElement(View,{style:styles.modal},
 React.createElement(View,{style:styles.modalInner},
-React.createElement(Text,null,this.state.currentWorkorder?this.state.currentWorkorder.items:'','.','\n',' $',this.state.currentWorkorder?this.state.currentWorkorder.pay:''),
+React.createElement(Text,null,this.state.currentWorkorder?this.state.currentWorkorder.items:'','\n',this.state.currentWorkorder?'$' + this.state.currentWorkorder.pay:'','\n'),
+React.createElement(Text,null,this.state.currentWorkorder !== null?this.state.currentWorkorder.type === "Delivery"?
+"from: \n" + this.state.currentWorkorder.from.name + '\n' + 
+this.state.currentWorkorder.from.addr + '\n' + '\n' + 
+"to: \n" + this.state.currentWorkorder.to.name + '\n' + 
+this.state.currentWorkorder.to.addr + '\n':
+this.state.currentWorkorder.to.name + '\n' + 
+this.state.currentWorkorder.to.addr + '\n':null),
 !this.state.acceptedOrder?React.createElement(ReadyButton,{styles:styles,controller:this,orderId:this.state.currentWorkorder?this.state.currentWorkorder.id:'',onpress:this.acceptOrder,text:'ACCEPT'}):null,
 React.createElement(CloseButton,{styles:styles,controller:this,text:!this.state.acceptedOrder?'DECLINE':'CLOSE'})))),
 
@@ -52791,8 +52898,8 @@ var AcceptedOrder=React.createClass({
 render:function(){
 return (
 React.createElement(View,{style:{height:this.props.controller.state.acceptedHeight}},
-React.createElement(ReadyButton,{text:'DONE',styles:styles,controller:this}),
-React.createElement(CloseButton,{text:'REPORT ISSUE',styles:styles,controller:this.props.controller})));}});
+React.createElement(ReadyButton,{text:'DONE',styles:styles,controller:this.props.controller,onpress:this.props.controller._completeOrder}),
+React.createElement(CloseButton,{text:'REPORT ISSUE',styles:styles,controller:this.props.controller,onpress:this.props.controller._completeOrder})));}});
 
 
 
@@ -52826,7 +52933,113 @@ React.createElement(Text,{style:this.props.styles.buttonText},this.props.text)))
 
 
 
-module.exports.view = MapViewExample;
+module.exports.view = WorkOrders;
+});
+__d('listmo/views/search_map.js',["react-native/Libraries/react-native/react-native.js","listmo/styles/main.js","react-native-icons/index.js"],function(global, require, module, exports) {  'use strict';
+
+var React=require('react-native/Libraries/react-native/react-native.js');
+var styles=require('listmo/styles/main.js').styles;var 
+
+
+
+MapView=
+
+
+
+
+
+React.MapView;var Text=React.Text;var TextInput=React.TextInput;var View=React.View;var TouchableHighlight=React.TouchableHighlight;var NativeAppEventEmitter=React.NativeAppEventEmitter;var _require=
+
+require('react-native-icons/index.js');var Icon=_require.Icon;
+
+var SearchMapView=React.createClass({
+
+componentWillUnmount:function(){
+navigator.geolocation.clearWatch(this.watchID);},
+
+
+componentDidMount:function(){
+
+var self=this;
+
+var subscription=NativeAppEventEmitter.addListener('MapCompleted',function(event){
+
+fetch('http://listmo.com/api/users/map').
+then(function(resp){return resp.json();}).
+then(function(json){
+var driverLocs=json.recentlocs;
+var driversAnnotations=[];
+if(json.success === true){
+driverLocs.map(function(driver){
+driversAnnotations = [{
+latitude:driver.lat,
+longitude:driver.long,
+title:driver.cust,
+pinColor:'green'}];});
+
+
+self.setState({drivers:driversAnnotations});}}).
+
+
+catch(function(error){
+console.log(error);});});},
+
+
+
+
+
+getInitialState:function(){
+var self=this;
+return {
+searchQuery:'',
+drivers:[]};},
+
+
+
+login:function(){
+
+this.props.nav.push({
+title:'Become A Driver',
+id:'main'});},
+
+
+
+render:function(){var _this=this;
+
+
+return (
+React.createElement(View,{style:[styles.container,{alignItems:'stretch'}]},
+
+React.createElement(View,{style:{flexDirection:'column'}},
+React.createElement(View,{style:{flexDirection:'row',alignItems:'center'}},
+React.createElement(Text,{style:[styles.label,{flex:1,fontSize:40}]},'LISTM😅'),
+
+
+React.createElement(TouchableHighlight,{style:{position:'absolute',right:20,top:16},onPress:this.login},
+React.createElement(Text,{style:[styles.buttonText,{fontSize:16}]},'💰',
+'\n','Make Money'))),
+
+
+
+React.createElement(View,{style:{flexDirection:'row',justifyContent:'flex-end'}},
+React.createElement(TextInput,{
+style:styles.searchBox,
+placeholder:'What are you looking for?',
+onChangeText:function(text){return _this.setState({searchQuery:text});},
+value:this.state.searchQuery}),
+React.createElement(Icon,{name:'fontawesome|search',size:20,color:'#CCC',style:styles.searchBoxIcon}))),
+
+
+React.createElement(MapView,{style:styles.map,showsUserLocation:true,annotations:this.state.drivers,showAnnotations:true})));}});
+
+
+
+
+
+
+
+
+module.exports.view = SearchMapView;
 });
 ;require("listmo/index.ios.js");
 //@ sourceMappingURL=/index.ios.map
