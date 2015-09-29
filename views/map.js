@@ -19,7 +19,7 @@ var { Icon, } = require('react-native-icons');
 var SESSION_KEY = '@AsyncStorageListmo:sess';
 var session = null;
 
-var MapViewExample = React.createClass({
+var WorkOrders = React.createClass({
 
 	componentWillUnmount() {
     	navigator.geolocation.clearWatch(this.watchID);
@@ -282,4 +282,4 @@ var CloseButton = React.createClass({
 	}
 })
 
-module.exports.view = MapViewExample;
+module.exports.view = WorkOrders;

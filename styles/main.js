@@ -89,7 +89,26 @@ var styles = StyleSheet.create({
   },
   modalButton: {
   	marginTop: 10,
-  }
+  },
+	searchBox: {
+		height: 40,
+        borderWidth: 1,
+        margin: 10,
+        backgroundColor: 'white',
+        paddingLeft: 10,
+        borderRadius: 5,
+        flex: 1,
+	},
+    searchBoxIcon: {
+        width: 30,
+        height: 30,
+        alignSelf: 'center',
+        backgroundColor: 'transparent',
+        // Flex centering fails when absolute positioning :(
+        // So we gotta hardcode the top pos for now...
+        // https://github.com/facebook/react-native/issues/1234
+        position: 'absolute', right:10, top:14
+    }
 });
 
 module.exports.styles = styles;
