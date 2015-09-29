@@ -25,13 +25,37 @@ var SearchMapView = React.createClass({
 
         var self = this;
 
-        //var subscription = NativeAppEventEmitter.addListener('MapCompleted', function (e) {});
+        var subscription = NativeAppEventEmitter.addListener('MapCompleted', (event) => {
+
+            fetch('http://listmo.com/api/users/map')
+                .then((resp) => { return resp.json() })
+                .then(function(json) {
+                    var driverLocs = json.recentlocs;
+                    var driversAnnotations = [];
+                    if(json.success === true){
+                        driverLocs.map((driver) => {
+                            driversAnnotations = [{
+                                latitude: driver.lat,
+                                longitude: driver.long,
+                                title: driver.cust,
+                                pinColor: 'green'
+                            }]
+                        });
+                        self.setState({drivers: driversAnnotations});
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+
+        });
     },
 
     getInitialState() {
         var self = this;
         return {
-            searchQuery: ''
+            searchQuery: '',
+            drivers: []
         };
     },
 
@@ -69,7 +93,7 @@ var SearchMapView = React.createClass({
                         <Icon name='fontawesome|search' size={20} color='#CCC' style={styles.searchBoxIcon}/>
                     </View>
                 </View>
-                <MapView style={styles.map} showsUserLocation={true} />
+                <MapView style={styles.map} showsUserLocation={true} annotations={this.state.drivers} showAnnotations={true} />
 
             </View>
         );
