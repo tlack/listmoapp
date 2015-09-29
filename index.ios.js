@@ -42,7 +42,7 @@ var listmo = React.createClass({
 				next = <MapView.view nav={nav}/>
 			break;
 			default: 
-				next = <MapView.view nav={nav}/>
+				next = <MainView.view nav={nav}/>
 			break;
 		}
 		return next;

@@ -11,10 +11,13 @@ var {
   TouchableHighlight,
   View,
   LayoutAnimation,
-  NativeAppEventEmitter
+  NativeAppEventEmitter,
+  AsyncStorage
 } = React;
 
 var { Icon, } = require('react-native-icons');
+var SESSION_KEY = '@AsyncStorageListmo:sess';
+var session = null;
 
 var MapViewExample = React.createClass({
 
@@ -22,11 +25,30 @@ var MapViewExample = React.createClass({
     	navigator.geolocation.clearWatch(this.watchID);
   	},
 
+  	async _loadInitialState() {
+		try {
+			session = await AsyncStorage.getItem(SESSION_KEY);
+		} catch (error) {
+			console.log(error);
+		}
+	},
+
 	componentDidMount(){
 
 		var _this = this;
-
 		var first = true;
+
+		this._loadInitialState().done();
+
+		navigator.geolocation.getCurrentPosition(
+	      (initialPosition) => this.setState({currentLocation:initialPosition}),
+	      (error) => alert(error.message),
+	      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+	    );
+
+	    this.watchID = navigator.geolocation.watchPosition((lastPosition) => {
+	      this.setState({currentLocation:lastPosition});
+	    });
 
 		var subscription = NativeAppEventEmitter.addListener(
 		  'MapCompleted',
@@ -95,6 +117,7 @@ var MapViewExample = React.createClass({
 		var _this = this;
 		return {
 			showModal: false,
+			currentLocation: null,
 			refreshAnnotations: null,
 			selectedOrder: null,
 			workorders: null,
@@ -134,6 +157,27 @@ var MapViewExample = React.createClass({
 	acceptOrder(id) {
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 		this.setState({showModal: false, acceptedOrder:this.state.currentWorkorder, acceptedHeight: 200});
+
+		this._startPolling();
+	},
+
+	_startPolling() {
+		console.log("start polling for location");
+		fetch('http://listmo.com/api/user/update?s='+session+'&lat='+this.state.currentLocation.coords.latitude+'&long='+this.state.currentLocation.coords.longitude).then((response) => response.json()).then((response) => {console.log(response)}).catch((error)=>{console.log(error);});
+		this.polling = setInterval(() => {
+			//update location
+			console.log("update");
+			fetch('http://listmo.com/api/user/update?s='+session+'&lat='+this.state.currentLocation.coords.latitude+'&long='+this.state.currentLocation.coords.longitude).then((response) => response.json()).then((response) => {console.log(response)}).catch((error)=>{console.log(error);});
+		},60000);
+	},
+
+	_stopPolling(){
+		console.log("stop polling for location");
+		clearInterval(this.polling);
+	},
+
+	_completeOrder(){
+		this._stopPolling();
 	},
 
 	render() {
@@ -203,8 +247,8 @@ var AcceptedOrder = React.createClass({
 	render: function(){
 		return (
 			<View style={{height: this.props.controller.state.acceptedHeight}}>
-				<ReadyButton text={'DONE'} styles={styles} controller={this}/>
-				<CloseButton text={'REPORT ISSUE'} styles={styles} controller={this.props.controller}/>
+				<ReadyButton text={'DONE'} styles={styles} controller={this.props.controller} onpress={this.props.controller._completeOrder}/>
+				<CloseButton text={'REPORT ISSUE'} styles={styles} controller={this.props.controller} onpress={this.props.controller._completeOrder}/>
 			</View>
 		)
 	}

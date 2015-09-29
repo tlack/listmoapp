@@ -1,3 +1,4 @@
+'use strict';
 var React = require('react-native');
 
 var {
@@ -7,18 +8,22 @@ var {
   ScrollView,
   TouchableHighlight,
   LayoutAnimation,
+  AsyncStorage
 } = React;
 
 var styles = require('../styles/main.js').styles;
 var Display = require('react-native-device-display');
 
 var phonereg = /^\d{10}$/;
+var SESSION_KEY = '@AsyncStorageListmo:sess';
+var PHONE_KEY = '@AsyncStorageListmo:phone';
 
 var MainView = React.createClass({
 	getInitialState: function(){
 		return {
 			showButtons:false,
 			inputError: false,
+			phone: null,
 			viewStyle: {
 				height: 0
 			},
@@ -47,7 +52,7 @@ var MainView = React.createClass({
 			});
 			this.animateButtons(false);
 		} else {
-			this.setState({showButtons: true, inputError: false});
+			this.setState({showButtons: true, inputError: false, phone:value});
 			this.animateButtons(true);
 		}
 		
@@ -72,10 +77,31 @@ var MainView = React.createClass({
 	login: function(){
 		if(this.state.showButtons === true)
 		{
-			this.props.nav.push({
-				title: 'Profile',
-				id: 'profile'
+			//set ajax to true
+			this.setState({ajax:true});
+
+			fetch('http://listmo.com/api/user/login?num=' + this.state.phone)
+			.then((response) => response.json())
+			.then((response) => {
+				this.setState({ajax:false});
+				if(response.success === true)
+				{
+					AsyncStorage.setItem(SESSION_KEY, response.sess);
+					AsyncStorage.setItem(PHONE_KEY, this.state.phone);
+
+					this.props.nav.push({
+						title: 'Profile',
+						id: 'profile'
+					})
+					//fetch('http://'+response.sess+':@listmo.com/api/user/update?lat=0.1&long=0.2').then((response) => response.json()).then((response) => {console.log(response)}).catch((error)=>{console.log(error);});
+				} else {
+					//display error message then
+					this.setState({errorMessage:response.msg});
+				}
 			})
+			.catch((error) => {
+				console.warn(error);
+			});
 		}
 	},
 	register: function(){
